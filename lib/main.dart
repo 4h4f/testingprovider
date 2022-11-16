@@ -14,7 +14,7 @@ void main() {
         debugShowCheckedModeBanner: false,
         home: const HomePage(),
         routes: {
-          '/new': (context) => const Material(),
+          '/new': (context) => const NewBreadCrumbsWidget(),
         },
       ),
     ),
@@ -46,7 +46,7 @@ class BreadCrumb {
 
 //-----------------BreadCrumb Provider starts-----------------
 class BreadCrumbProvider extends ChangeNotifier {
-  final List<BreadCrumb> _items = [BreadCrumb(isActive: false, name: "abdo")];
+  final List<BreadCrumb> _items = [];
   UnmodifiableListView<BreadCrumb> get item => UnmodifiableListView(_items);
   void add(BreadCrumb breadCrumb) {
     for (final item in _items) {
@@ -89,6 +89,11 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(title: const Text("my app")),
       body: Column(
         children: [
+          Consumer<BreadCrumbProvider>(
+            builder: (context, value, child) {
+              return BreadCrumbsWidget(breadCrumbs: value.item);
+            },
+          ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pushNamed('/new');
@@ -102,6 +107,56 @@ class HomePage extends StatelessWidget {
             },
             child: const Text("Reset"),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class NewBreadCrumbsWidget extends StatefulWidget {
+  const NewBreadCrumbsWidget({Key? key}) : super(key: key);
+
+  @override
+  _NewBreadCrumbsWidgetState createState() => _NewBreadCrumbsWidgetState();
+}
+
+class _NewBreadCrumbsWidgetState extends State<NewBreadCrumbsWidget> {
+  late final TextEditingController _controller;
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Add new bread crumb"),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            decoration:
+                const InputDecoration(hintText: 'Enter a new bread crumbs'),
+          ),
+          TextButton(
+              onPressed: () {
+                final text = _controller.text;
+                if (text.isNotEmpty) {
+                  final breadCrumb = BreadCrumb(name: text, isActive: false);
+                  context.read<BreadCrumbProvider>().add(breadCrumb);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text("add"))
         ],
       ),
     );
